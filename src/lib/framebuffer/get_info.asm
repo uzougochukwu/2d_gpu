@@ -1,0 +1,49 @@
+	; include /usr/include/xf86drmMode.h, on line 281 you have drmModeGetResources() which queries the gpu for a whole bunch of information on width, height etc, similar to the fb0 ioctl
+
+	; go to https://github.com/grate-driver/libdrm/blob/3e3c53ed85c30331a6c0ba2af349223654caa5dd/xf86drmMode.c#L154 for a full definition of drmModeGetResources
+
+	; for from scratch approach:
+	;https://github.com/grate-driver/libdrm/blob/master/xf86drm.c#L185
+	;https://www.google.com/search?client=firefox-b-d&q=DRM_IOCTL_MODE_GETRESOURCES
+	;https://elixir.bootlin.com/linux/v6.12.5/C/ident/DRM_IOCTL_MODE_GETRESOURCES
+	;https://stackoverflow.com/questions/57318805/calling-drm-ioctl-mode-getresources-from-ioctl-returns-zero-connector-count
+	;https://search.brave.com/search?q=DRM_IOWR+linux&source=web&summary=1&conversation=36b07e54da687d0d35230a
+	;https://elixir.bootlin.com/linux/v6.10.2/source/include/uapi/drm/drm.h#L1041
+	;https://search.brave.com/search?q=_IOWR+linux&summary=1&conversation=508532d8396776458a04b8
+	;https://search.brave.com/search?q=linux+DRM_IOCTL_BASE&summary=1&conversation=36d98041ef73c0f8ab1c98
+	;https://www.chiark.greenend.org.uk/doc/linux-doc-3.16/html/drm/ch02s08.html
+	
+%include "/home/calebmox/2d_gpu/src/lib/sys/syscalls.asm"
+
+	
+section .bss
+	
+gpu_file_descriptor: resb 1
+
+gpu_info: resb 64
+
+section .data
+
+gpu_device: db `/dev/dri/renderD128\0`
+
+
+section .text
+global _start
+
+
+_start:
+
+	mov rax, sys_open
+	push rax
+	mov rdi, gpu_device
+	mov rsi, o_wronly
+	syscall
+
+	mov byte [gpu_file_descriptor], al
+
+	movzx rdi, al
+
+	pop rax
+	mov rax, sys_exit
+	syscall
+	
